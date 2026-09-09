@@ -49,7 +49,7 @@ function DetailTimeRange({ readOnly, editDisabled, formValues, resultText, onCli
                         required
                         readOnly={readOnly}
                         type="text"
-                        size={8}
+                        size={3}
                         placeholder="project name"
                         name="projectName"
                         defaultValue={formValues.projectName}
