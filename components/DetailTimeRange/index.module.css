@@ -1,0 +1,19 @@
+.detail_time_range_wrapper {
+    display: flex;
+
+    .form_child {
+        display: flex;
+    }
+
+    .time_wrapper {
+        display: flex;
+
+        .time_range {
+            margin-right: 10px;
+        }
+    }
+
+    .submit_button {
+        margin-left: 10px;
+    }
+}

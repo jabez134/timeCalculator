@@ -1,0 +1,10 @@
+.detail_duration_summary_wrapper {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    border: 1px dashed #000;
+
+    .detail_duration_final_hour_wrapper > * + * {
+        margin-left: 20px;
+    }
+}

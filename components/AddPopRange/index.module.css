@@ -1,0 +1,11 @@
+.buttons_wrapper {
+    display: flex;
+
+    > button + button {
+        margin-left: 50px;
+    }
+
+    > button:last-of-type {
+        margin-left: auto;
+    }
+}

@@ -1,0 +1,7 @@
+.total_time_subtract_wrapper {
+    display: flex;
+
+    .submit_button {
+        margin-left: 10px;
+    }
+}
