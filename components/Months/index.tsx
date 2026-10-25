@@ -57,6 +57,35 @@ function Months() {
                     }}
                 />
             ) : null}
+            {months.map((m) => {
+                return (
+                    <Month
+                        key={m.id}
+                        monthId={m.id}
+                        editingId={editingId}
+                        monthString={m.monthString}
+                        days={m.days}
+                        onChangeEditingId={setEditingId}
+                        onChangeMonths={setMonths}
+                    />
+                )
+            })}
+            {months.length === 0 ? (
+                <AddMonth
+                    onAddMonth={({ addedMonthString }) => {
+                        setEditingId('');
+                        setMonths((monthsPrevious) => {
+                            const monthExist = monthsPrevious.some((i) => i.monthString === addedMonthString);
+                            if (monthExist) {
+                                alertUtil(`${addedMonthString} already exist`);
+                                return monthsPrevious;
+                            }
+
+                            return [ ...monthsPrevious, getInitialMonth({ previousArrayLength: monthsPrevious.length, monthString: addedMonthString })]
+                        });
+                    }}
+                />
+            ): null}
             
             <div key={exportDownloadFilesKey} className={styles.exports_download_wrapper}>
                 <ExportDownloadFile
@@ -94,36 +123,6 @@ function Months() {
                     }}
                 />
             </div>
-
-            {months.map((m) => {
-                return (
-                    <Month
-                        key={m.id}
-                        monthId={m.id}
-                        editingId={editingId}
-                        monthString={m.monthString}
-                        days={m.days}
-                        onChangeEditingId={setEditingId}
-                        onChangeMonths={setMonths}
-                    />
-                )
-            })}
-            {months.length === 0 ? (
-                <AddMonth
-                    onAddMonth={({ addedMonthString }) => {
-                        setEditingId('');
-                        setMonths((monthsPrevious) => {
-                            const monthExist = monthsPrevious.some((i) => i.monthString === addedMonthString);
-                            if (monthExist) {
-                                alertUtil(`${addedMonthString} already exist`);
-                                return monthsPrevious;
-                            }
-
-                            return [ ...monthsPrevious, getInitialMonth({ previousArrayLength: monthsPrevious.length, monthString: addedMonthString })]
-                        });
-                    }}
-                />
-            ): null}
         </div>
     )
 }
