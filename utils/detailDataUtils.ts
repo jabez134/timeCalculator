@@ -421,19 +421,9 @@ type ChangeDetailToMarkdownTextParams = {
 export const changeDetailToMarkdownText = ({ months }: ChangeDetailToMarkdownTextParams) => {
     const detailMarkdownText = months.reduce((pre, month, monthIndex) => {
 
-        const hourDays: { id: string; dayString: string; lackHour: string }[] = [];
-     
         const daysString = month.days.reduce((preDaysString, day) => {
             const detailTimeRanges = day.detail.detailTimeRanges;
             const detailDurationsSummary = day.detail.detailDurationsSummary;
-
-            const detailLackDurationHourSummaryItem = detailDurationsSummary.find((item) => item.id === DETAIL_LACK_DURATION_HOURS_RESULT);
-             if ((!!detailLackDurationHourSummaryItem) && (detailLackDurationHourSummaryItem.finalHourChangeable)) {
-                hourDays.push({ id: day.id, dayString: day.dayString, lackHour: detailLackDurationHourSummaryItem.finalHour.value });
-            } else {
-                hourDays.push({ id: day.id, dayString: day.dayString, lackHour: '' });
-            }
-
 
             const detailTimeRangesString = detailTimeRanges.reduce((preDetailTimeRangesString, detailTimeRange)=> {
                 const projectName = detailTimeRange.formValues.projectName;
@@ -458,17 +448,36 @@ export const changeDetailToMarkdownText = ({ months }: ChangeDetailToMarkdownTex
             return `${preDaysString}\n\n- ${day.dayString}${detailTimeRangesString}\n${detailDurationsSummaryString}`;
         }, '');
         
-        const hourDaysString = hourDays.reduce((preLackHourDaysString, item) => {
-            const hour = item.lackHour;
+        const currentMonthDaysHour = month.days.map((day) => {
+            const detailDurationsSummary = day.detail.detailDurationsSummary;
 
-            return `${preLackHourDaysString}\n\t- ${item.dayString}: ${hour === '' ? 'not exist' : hour}`;
+            const subString = detailDurationsSummary.reduce((daysSubStringPre, detailDurationsSummaryItem) => {
+                if ([DETAIL_LACK_DURATION, DETAIL_LACK_DURATION_HOURS_RESULT].includes(detailDurationsSummaryItem.id)) {
+                    return daysSubStringPre;
+                }
+                
+                const hour = detailDurationsSummaryItem.finalHourChangeable ? detailDurationsSummaryItem.finalHour.value : '';
+                
+                return `${daysSubStringPre}\n\t\t- ${detailDurationsSummaryItem.name}: ${hour === '' ? 'not exist' : hour}`;
+            }, ``);
+
+            const detailLackDurationHourSummaryItem = detailDurationsSummary.find((item) => item.id === DETAIL_LACK_DURATION_HOURS_RESULT);
+            const lackHour = detailLackDurationHourSummaryItem?.finalHourChangeable ? detailLackDurationHourSummaryItem.finalHour.value : '';
             
+            return { id: day.id, dayString: day.dayString, lackHour, lackDurationString: detailLackDurationHourSummaryItem?.durationString, subString };
+        });
+        
+        const currentMonthDaysHourString = currentMonthDaysHour.reduce((daysHourStringPre, item) => {
+            const hour = item.lackHour;
+            const hourString = hour === '' ? 'not exist' : hour;
+            const lackDurationString = (item.lackDurationString !== undefined) ? `  (${item.lackDurationString})` : '';
+
+            return `${daysHourStringPre}\n\n\t- ${item.dayString}: ${hourString}${lackDurationString}${item.subString}`;
         }, '- 当月请假汇总: ');
 
-        
-        const baseString = `${pre}${monthIndex === 0 ? '' : '\n\n\n'}### ${month.monthString}${daysString}\n\n${hourDaysString}\n\t- 总和: `;
+        const baseString = `${pre}${monthIndex === 0 ? '' : '\n\n\n'}### ${month.monthString}${daysString}\n\n${currentMonthDaysHourString}\n\n\t- 总和: `;
 
-        const emptyHourDays = hourDays.filter((item) => item.lackHour === '');
+        const emptyHourDays = currentMonthDaysHour.filter((item) => item.lackHour === '');
         if (emptyHourDays.length > 0) {
             const message = `empty hour(${emptyHourDays.map((item) => item.dayString).join(', ')})`;
             alertUtil(message);
@@ -476,7 +485,7 @@ export const changeDetailToMarkdownText = ({ months }: ChangeDetailToMarkdownTex
         }
         
 
-        const totalHourNumberAndHoursString = hourDays.reduce((pre, item, index) => {
+        const totalHourNumberAndHoursString = currentMonthDaysHour.reduce((pre, item, index) => {
             const hour = item.lackHour;
 
             const totalHour = pre.totalHour + Number(hour);
