@@ -5,6 +5,6 @@
     border: 1px dashed #000;
 
     .detail_duration_final_hour_wrapper > * + * {
-        margin-left: 20px;
+        margin-left: 5px;
     }
 }
