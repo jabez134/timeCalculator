@@ -44,7 +44,23 @@ function DetailTimeRange({ readOnly, editDisabled, formValues, resultText, onCli
             >
                 <div className={styles.form_child}>
                     <button disabled={editDisabled} type="button" onClick={onClickEdit}>Edit</button>
-                    &nbsp;&nbsp;
+                    <div>
+                        <input
+                            required
+                            readOnly={readOnly}
+                            type="time"
+                            name="startPlainTimeString"
+                            defaultValue={formValues.startPlainTimeString}
+                        />
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;~&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <input
+                            required
+                            readOnly={readOnly}
+                            type="time"
+                            name="endPlainTimeString"
+                            defaultValue={formValues.endPlainTimeString}
+                        />
+                    </div>
                     <input
                         required
                         readOnly={readOnly}
@@ -54,36 +70,16 @@ function DetailTimeRange({ readOnly, editDisabled, formValues, resultText, onCli
                         name="projectName"
                         defaultValue={formValues.projectName}
                     />
-                    &nbsp;&nbsp;
-                    <div className={styles.time_wrapper}>
-                        <div className={styles.time_range}>
-                            <input
-                                required
-                                readOnly={readOnly}
-                                type="time"
-                                name="startPlainTimeString"
-                                defaultValue={formValues.startPlainTimeString}
-                            />
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;~&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            <input
-                                required
-                                readOnly={readOnly}
-                                type="time"
-                                name="endPlainTimeString"
-                                defaultValue={formValues.endPlainTimeString}
-                            />
-                        </div>
-                        <div>
-                            (减 <input
-                                required
-                                readOnly={readOnly}
-                                type="time"
-                                name="currentSubtractPlainTimeString"
-                                defaultValue={formValues.currentSubtractPlainTimeString}
-                            />)
-                        </div>
+                    <div>
+                        (减 <input
+                            required
+                            readOnly={readOnly}
+                            type="time"
+                            name="currentSubtractPlainTimeString"
+                            defaultValue={formValues.currentSubtractPlainTimeString}
+                        />)
                     </div>
-                    <button className={styles.submit_button} disabled={readOnly} type="submit">Submit</button>
+                    <button disabled={readOnly} type="submit">Submit</button>
                 </div>
             </form>
             <div>{resultText}</div>
