@@ -221,6 +221,18 @@ function Month({ monthId, editingId, monthString, days, onChangeEditingId, onCha
                         monthId={monthId}
                         key={dayId}
                         {...d}
+                        onChangeDayNote={(changedText) => {
+                            onChangeMonths((monthsPrevious) => {
+                                return monthsPrevious.map((monthPrevious) => {
+                                    if (monthPrevious.id !== monthId) return monthPrevious;
+                                    const changedDays = monthPrevious.days.map((dayPrevious) => {
+                                        if (dayPrevious.id !== dayId) return dayPrevious;
+                                        return { ...dayPrevious, dayNote: changedText };
+                                    });
+                                    return { ...monthPrevious, days: changedDays };
+                                });
+                            });
+                        }}
                         onChangeEditingId={onChangeEditingId}
 
                         // Detail

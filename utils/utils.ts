@@ -68,7 +68,7 @@ type GetInitialDayParams = {
     dayString: string;
 }
 export const getInitialDay = ({ previousArrayLength, dayString }: GetInitialDayParams): DayType => {
-    return { id: `${previousArrayLength + 1}`, dayString, detail: { detailTimeRanges: [], detailDurationsSummary: [] }, total: { totalTimeRanges: [], subtractPlainTimeString: '00:00', totalDurationsSummary: [] } };
+    return { id: `${previousArrayLength + 1}`, dayString, dayNote: '', detail: { detailTimeRanges: [], detailDurationsSummary: [] }, total: { totalTimeRanges: [], subtractPlainTimeString: '00:00', totalDurationsSummary: [] } };
 }
 
 type IsInRangeParams = {

@@ -58,6 +58,7 @@ type DayTotalType = {
 type DayType = {
     id: string;
     dayString: string;
+    dayNote?: string;
     detail: DayDetailType;
     total: DayTotalType;
 };

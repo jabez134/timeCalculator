@@ -1,4 +1,4 @@
-
+import DayStringWithNote from '../DayStringWithNote';
 import AddPopRange from '../AddPopRange';
 import CalculateClear from '../CalculateClear';
 import DetailDurationSummary from '../DetailDurationSummary';
@@ -67,11 +67,13 @@ type Props = DayType & {
     onClickPopTotalTimeRange: React.DOMAttributes<HTMLButtonElement>['onClick'];
     onSubmitTotalTimeRangeFormValues: (params: { id: string; values: TotalTimeRangeFormValues }) => void;
     onTotalSubtractPlainTimeStringChange: (v: string) => void;
+    onChangeDayNote: (changedText: string) => void;
 };
 
 function Day({
     id,
     dayString,
+    dayNote,
     monthId,
     editingId,
     detail,
@@ -90,6 +92,7 @@ function Day({
     onClickPopTotalTimeRange,
     onSubmitTotalTimeRangeFormValues,
     onTotalSubtractPlainTimeStringChange,
+    onChangeDayNote,
 }: Props) {
 
     const subtractPlainTimeStringIdTotal = `total-${monthId}-${id}-subtractPlainTimeString`;
@@ -99,7 +102,7 @@ function Day({
 
     return (
         <div className={styles.day_wrapper}>
-            Day: {dayString}
+            <DayStringWithNote dayString={dayString} note={dayNote} onChangeNote={onChangeDayNote} />
             <div className={styles.total_detail}>
                 <div className={styles.total}>
                     Total:{totalBaseDisabled ? `(CAN NOT change when detail summary is not empty)` : null}
