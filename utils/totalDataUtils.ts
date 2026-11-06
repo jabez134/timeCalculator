@@ -1,4 +1,4 @@
-import { DURATION_PER_DAY, DURATION_PER_DAY_STRING, TOTAL_LACK_DURATION_HOURS_RESULT } from "./constants";
+import { DURATION_PER_DAY, DURATION_PER_DAY_STRING, TOTAL_DURATION, TOTAL_LACK_DURATION_HOURS_RESULT } from "./constants";
 import { alertUtil, getDurationLocaleStringOrString, getPlainTimeString, logUtil, temporalPlainTimeFrom } from "./utils";
 
 
@@ -135,7 +135,7 @@ const getTotalDurationSummary = ({ subtractPlainTimeString, dayString, totalTime
     const totalTimeRangesDuration = totalTimeRangeDurations.reduce((pre, item) => pre.add(item), new Temporal.Duration());
 
     const totalDurationBeforeSubtractSummaryItem: TotalDurationsSummaryItem = {
-        id: "totalDuration",
+        id: TOTAL_DURATION,
         name: "时间段相加",
         durationString: `${
             totalTimeRangeDurations.length > 0 ? totalTimeRangeDurations.map(getDurationLocaleStringOrString).join(' + ') : getDurationLocaleStringOrString(totalTimeRangesDuration)
@@ -272,4 +272,33 @@ export const changeTotalToMarkdownText = ({ months }: ChangeTotalToMarkdownTextP
     }, '');
 
     return detailMarkdownText;
+};
+
+type ChangeTotalToMarkdownTextForCompareWithPhotosParams = {
+    months: MonthType[];
+}
+export const changeTotalToMarkdownTextForCompareWithPhotos = ({ months }: ChangeTotalToMarkdownTextForCompareWithPhotosParams) => {
+    const markdownText = months.reduce((pre, month, monthIndex) => {
+        
+        const daysString = month.days.reduce((preDaysString, day, dateIndex) => {
+            const totalTimeRanges = day.total.totalTimeRanges;
+
+            const timeRangesString = totalTimeRanges.reduce((preTimeRangesString, timeRange)=> {
+                const start = timeRange.formValues.startPlainTimeString;
+                const end = timeRange.formValues.endPlainTimeString;
+                const resultText = timeRange.resultText;
+                return `${preTimeRangesString}\n\t- ${start}-${end} | result: ${resultText}`;
+            }, '');
+
+            const totalDuration = day.total.totalDurationsSummary.find(i => i.id === TOTAL_DURATION);
+            
+            const totalDurationText = totalDuration ? `\n\n\t- ${totalDuration.name}: ${totalDuration.durationString}` : '';
+
+            return `${preDaysString}${((monthIndex === 0) && (dateIndex === 0)) ? '' : '\n\n'}- ${day.dayString}${timeRangesString}${totalDurationText}`;
+        }, '');
+
+        return `${pre}${daysString}`;
+    }, '');
+    
+    return markdownText;
 };

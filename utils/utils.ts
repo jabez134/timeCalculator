@@ -28,6 +28,10 @@ export const getAddedPlainDateString = (item?: Temporal.PlainDateLike, options?:
     return addedPlainDate.toString();
 };
 
+export const temporalPlainDateFrom = (item: Temporal.PlainDateLike, options: Temporal.OverflowOptions = {}) => {
+    return Temporal.PlainDate.from(item, { overflow: 'reject', ...options });
+};
+
 export const temporalPlainTimeFrom = (item: Temporal.PlainTimeLike, options: Temporal.OverflowOptions = {}) => {
     return Temporal.PlainTime.from(item, { overflow: 'reject', ...options });
 };

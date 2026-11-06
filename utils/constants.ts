@@ -6,6 +6,8 @@ export const DETAIL_LACK_DURATION = 'DETAIL_LACK_DURATION';
 /** detail id(name: 请假(hour)) */
 export const DETAIL_LACK_DURATION_HOURS_RESULT = 'DETAIL_LACK_DURATION_HOURS_RESULT';
 
+/** total id(name: 时间段相加) */
+export const TOTAL_DURATION = 'TOTAL_DURATION';
 /** total id(name: 请假(hour)) */
 export const TOTAL_LACK_DURATION_HOURS_RESULT = 'TOTAL_LACK_DURATION_HOURS_RESULT';
 

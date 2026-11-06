@@ -3,11 +3,12 @@ import { useEffect, useState } from "react";
 import Month from "../Month";
 import AddMonth from "../AddMonth";
 import ImportFile from "../ImportFile";
+import ImportPicturesForTimeRanges from "../ImportPicturesForTimeRanges";
 import ExportDownloadFile from "../ExportDownloadFile";
 
 import { alertUtil, getInitialMonth } from "../../utils/utils";
 import { changeDetailToMarkdownText } from "../../utils/detailDataUtils";
-import { changeTotalToMarkdownText } from "../../utils/totalDataUtils";
+import { changeTotalToMarkdownText, changeTotalToMarkdownTextForCompareWithPhotos } from "../../utils/totalDataUtils";
 import { MONTHS_LOCAL_STORAGE_KEY } from "../../utils/constants";
 
 import styles from './index.module.css';
@@ -33,8 +34,14 @@ function Months() {
 
     const monthsString = months.map(m => m.monthString).join('_');
     
+    const exportTimeRangesTotalPicturesFileName = `time_ranges_total_pictures_${monthsString}.md`;
     return (
         <div className={styles.months_wrapper}>
+            <ImportPicturesForTimeRanges
+                label="Import Pictures"
+                exportFileName={exportTimeRangesTotalPicturesFileName}
+                exportFileMIMEType="text/markdown"
+            />
             {months.length === 0 ? (
                 <ImportFile
                     label="Import JSON Data"
@@ -88,18 +95,31 @@ function Months() {
             ): null}
             
             <div key={exportDownloadFilesKey} className={styles.exports_download_wrapper}>
-                <ExportDownloadFile
-                    label="Total(Markdown)"
-                    fileName={`time_ranges_total_${monthsString}.md`}
-                    fileMIMEType="text/markdown"
-                    onExport={() => {
-                        if (months.length === 0) {
-                            return { success: false, message: `month data is not exist` };
-                        }
-                        return { success: true, text: changeTotalToMarkdownText({ months }) };
-                    }}
-                 
-                />
+                <div>
+                    <ExportDownloadFile
+                        label="Total(Markdown)"
+                        fileName={`time_ranges_total_${monthsString}.md`}
+                        fileMIMEType="text/markdown"
+                        onExport={() => {
+                            if (months.length === 0) {
+                                return { success: false, message: `month data is not exist` };
+                            }
+                            return { success: true, text: changeTotalToMarkdownText({ months }) };
+                        }}
+                    
+                    />
+                    <ExportDownloadFile
+                        label="Total(Markdown, for compare with pictures)"
+                        fileName={exportTimeRangesTotalPicturesFileName}
+                        fileMIMEType="text/markdown"
+                        onExport={() => {
+                            if (months.length === 0) {
+                                return { success: false, message: `month data is not exist` };
+                            }
+                            return { success: true, text: changeTotalToMarkdownTextForCompareWithPhotos({ months }) };
+                        }}
+                    />
+                </div>
                 <ExportDownloadFile
                     label="Detail(Markdown)"
                     fileName={`time_ranges_detail_${monthsString}.md`}
