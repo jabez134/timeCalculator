@@ -1,4 +1,5 @@
 import { alertUtil, getDurationLocaleStringOrString, getPlainTimeString, temporalPlainDateFrom, temporalPlainTimeFrom } from "./utils";
+import { getJPEGDataFromArrayBuffer } from "./imageUtils";
 
 type GetTotalDurationsParams = {
     times: { start: string; end: string };
@@ -19,37 +20,81 @@ const getDurationAndResultText = ({ times }: GetTotalDurationsParams) => {
     return { endSinceStartAddOneMinuteDuration, resultText };
 }
 
-const getDateTimeFromFileNames = ({ files }: { files: FormDataEntryValue[] }) => {
+const getDateTimeFromFileNames = async ({ files }: { files: FormDataEntryValue[] }) => {
     // const regExp = /^IMG_(?<Date>\d{8})_(?<Time>\d{6})\.jpg$/;
     const jpegFileNameRegExp = /^IMG_\d{8}_\d{6}\.jpg$/;
     const jpegFileNameStartRegExp = /^IMG_/;
     const jpegFileNameEndRegExp = /\.jpg$/;
 
-    const dateTimes = files.map((fileItem) => {
+    const dateTimePromises = files.map(async (fileItem) => {
         if (typeof fileItem === 'string') {
-            alertUtil(`${fileItem} is not a file`);
-            return { name: fileItem, date: 'null', time: '', dateTime: '' };
+            const message = `${fileItem} is not a file`;
+            alertUtil(message);
+            return Promise.reject(message);
         }
 
         const fileName = fileItem.name;
         const testResult = jpegFileNameRegExp.test(fileName);
         if (!testResult) {
-            alertUtil(`file name(${fileName}) should be ${jpegFileNameRegExp}`);
-            return { name: fileName, date: 'null', time: '', dateTime: '' };
+            const message = `file name(${fileName}) should be ${jpegFileNameRegExp}`;
+            alertUtil(message);
+            return Promise.reject(message);
         }
 
 
         const [date, time] = fileName.replace(jpegFileNameEndRegExp, '').replace(jpegFileNameStartRegExp, '').split('_');
         if ((!date) || (!time)) {
-            alertUtil(`date(${date}) or time(${time}) in file name(${fileName}) is not exist`);
-            return { name: fileName, date: 'null', time: '', dateTime: '' };
+            const message = `date(${date}) or time(${time}) in file name(${fileName}) is not exist`;
+            alertUtil(message);
+            return Promise.reject(message);
         }
 
-        const fixedDate = `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6)}`;
+        const yearFromFileName = date.slice(0,4);
+        const monthFromFileName = date.slice(4,6);
+        const dayFromFileName = date.slice(6);
+        const fixedDate = `${yearFromFileName}-${monthFromFileName}-${dayFromFileName}`;
         const fixedTime = `${time.slice(0,2)}:${time.slice(2,4)}:${time.slice(4)}`;
 
-        return { name: fileName, date: fixedDate, time: fixedTime, dateTime: `${fixedDate}T${fixedTime}` };
+        return fileItem.arrayBuffer().then((fileArrayBuffer) => {
+            const resultFromArrayBuffer = getJPEGDataFromArrayBuffer({ fileArrayBuffer });
+            console.log('resultFromArrayBuffer', resultFromArrayBuffer);
+            
+            if (!resultFromArrayBuffer.success) {
+                return Promise.reject(resultFromArrayBuffer.message);
+            }
+            const { dateTime, dateTimeOriginal, dateTimeDigitized } = resultFromArrayBuffer.data;
+            if (!dateTime.success) {
+                return Promise.reject(dateTime.message);
+            }
+            if (!dateTimeOriginal.success) {
+                return Promise.reject(dateTimeOriginal.message);
+            }
+            if (!dateTimeDigitized.success) {
+                return Promise.reject(dateTimeDigitized.message);
+            }
+
+            const dateTimeValue = dateTime.value;
+            const dateTimeOriginalValue = dateTimeOriginal.value;
+            const dateTimeDigitizedValue = dateTimeDigitized.value;
+            if ((dateTimeValue !== dateTimeOriginalValue) || (dateTimeValue !== dateTimeDigitizedValue)) {
+                return Promise.reject(`${dateTime.name}(${dateTimeValue}), ${dateTimeOriginal.name}(${dateTimeOriginalValue}), ${dateTimeDigitized.name}(${dateTimeDigitizedValue}) is not equal`);
+            }
+
+            const dateTimeFromFileNameForCompare = `${yearFromFileName}:${monthFromFileName}:${dayFromFileName} ${fixedTime}\x00`;
+            if (dateTimeValue !== dateTimeFromFileNameForCompare) {
+                return Promise.reject(`date time from array buffer(${dateTimeValue}) and file name is not equal`);
+            }
+            
+            return {
+                name: fileName,
+                date: fixedDate,
+                time: fixedTime,
+                dateTime: `${fixedDate}T${fixedTime}`,
+            };
+        });
     });
+
+    const dateTimes = await Promise.all(dateTimePromises);
 
     const compareDateTimesResult = dateTimes.every((item, index, arr) => {
         const date = item.date;
@@ -84,8 +129,8 @@ const getDateTimeFromFileNames = ({ files }: { files: FormDataEntryValue[] }) =>
     return dateTimes;
 }
 
-const getFixedDatesTimes = ({ files }: { files: FormDataEntryValue[] }) => {
-    const dateTimes = getDateTimeFromFileNames({ files });
+const getFixedDatesTimes = async ({ files }: { files: FormDataEntryValue[] }) => {
+    const dateTimes = await getDateTimeFromFileNames({ files });
     
     const originalDateTimes = Object.entries(Object.groupBy(dateTimes, i => i.date)).map(([date, arr]) => ({ date, times: arr ?? [] }));
     const fixedDateTimes: typeof originalDateTimes = [];
@@ -130,8 +175,8 @@ const getFixedDatesTimes = ({ files }: { files: FormDataEntryValue[] }) => {
     return fixedDateTimes;
 };
 
-export const changeDataFromFileNameToMarkdownText = ({ files }: { files: FormDataEntryValue[] }) => {
-    const datesTimes = getFixedDatesTimes({ files });
+export const changeDataFromFileNameToMarkdownText = async ({ files }: { files: FormDataEntryValue[] }) => {
+    const datesTimes = await getFixedDatesTimes({ files });
     
     const markdownText = datesTimes.reduce((pre, dateTimeRanges, dateIndex) => {
         const currentDate = dateTimeRanges.date;

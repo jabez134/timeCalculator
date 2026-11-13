@@ -30,10 +30,10 @@ function ImportPicturesForTimeRanges({ label, exportFileName, exportFileMIMEType
                     }
                     setFileURL('');
                 }}
-                action={(formData) => {
+                action={async (formData) => {
                     const files = formData.getAll('files');
 
-                    const text = changeDataFromFileNameToMarkdownText({ files });
+                    const text = await changeDataFromFileNameToMarkdownText({ files });
 
                     const file = new File([text], exportFileName, { type: exportFileMIMEType });
                     const downloadURL = URL.createObjectURL(file);
